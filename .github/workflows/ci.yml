@@ -1,0 +1,42 @@
+name: Run Cypress Tests
+
+on:
+  push:
+    branches:
+      - master  # Executa o CI apenas nos pushs para a branch master
+  pull_request:  # Também executa em PRs
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest  # Use 'ubuntu-latest' para maior compatibilidade
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'  # Ajuste para a versão do Node que você está usando no projeto
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Listar arquivos na pasta de fixtures
+        run: ls -R cypress/fixtures
+
+      - name: Executar Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          runTests: true  # Garante que os testes serão executados
+
+      - name: Salvar resultados dos testes
+        if: failure()  # Salva os artefatos apenas se os testes falharem
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-results
+          path: |
+            cypress/screenshots
+            cypress/videos
+            cypress/reports
+            cypress/logs
